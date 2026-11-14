@@ -6,9 +6,9 @@ define('PREVENT_DIRECT_ACCESS', TRUE);
  * ------------------------------------------------------------------
  *
  * MIT License
- * 
+ *
  * Copyright (c) 2020 Ronald M. Marasigan
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -42,7 +42,7 @@ define('PREVENT_DIRECT_ACCESS', TRUE);
  *
  * This variable must contain the name of your "scheme" directory.
  * Set the path if it is not in the same directory as this file.
- * 
+ *
  * NO TRAILING SLASH!
  */
 	$system_path 			= 'scheme';
@@ -77,6 +77,45 @@ define('ROOT_DIR',  dirname(__DIR__) . DIRECTORY_SEPARATOR);
 define('SYSTEM_DIR', ROOT_DIR . $system_path . DIRECTORY_SEPARATOR);
 define('APP_DIR', ROOT_DIR . $application_folder . DIRECTORY_SEPARATOR);
 define('PUBLIC_DIR', $public_folder);
+
+/*
+ * --------------------------------------------------------------
+ * Load .env file (environment variables para sa database, atbp.)
+ * --------------------------------------------------------------
+ */
+$env_file = ROOT_DIR . '.env';
+if (file_exists($env_file)) {
+    $lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if ($line === '' || strpos($line, '#') === 0 || strpos($line, ';') === 0) {
+            continue;
+        }
+        if (strpos($line, '=') === false) {
+            continue;
+        }
+        list($key, $value) = explode('=', $line, 2);
+        $key  = trim($key);
+        $value = trim($value);
+        if (preg_match('/^["\'](.*)["\']$/', $value, $m)) {
+            $value = $m[1];
+        }
+        if (!isset($_ENV[$key]) && !getenv($key)) {
+            putenv("{$key}={$value}");
+            $_ENV[$key] = $value;
+            $_SERVER[$key] = $value;
+        }
+    }
+}
+
+/*
+ * --------------------------------------------------------------
+ * Start PHP session (para sa authentication)
+ * --------------------------------------------------------------
+ */
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 /*
  * ------------------------------------------------------

@@ -268,6 +268,16 @@ class Database {
             PDO::ATTR_EMULATE_PREPARES   => false,
         );
 
+        // SSL support for Aiven (ssl-mode=REQUIRED)
+        $ssl_ca = getenv('DB_SSL_CA') ?: '';
+        $ssl_verify = getenv('DB_SSL_VERIFY_SERVER_CERT') ?: '0';
+        if ($ssl_ca !== '') {
+            $options[PDO::MYSQL_ATTR_SSL_CA] = $ssl_ca;
+        }
+        if (strtolower($ssl_verify) === '1' || strtolower($ssl_verify) === 'true') {
+            $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = true;
+        }
+
         try {
             $this->db = new PDO($dsn, $username, $password, $options);
             $this->driver = $this->db->getAttribute(PDO::ATTR_DRIVER_NAME);
